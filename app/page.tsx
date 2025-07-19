@@ -10,6 +10,8 @@ import { getContacts, deleteContact, Contact } from '@/lib/contactService'
 export default function Home() {
   const [contacts, setContacts] = useState<Contact[]>([])
   const [query, setQuery] = useState('')
+  const [groupFilter, setGroupFilter] = useState('')
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
   const [loading, setLoading] = useState(true)
 
   const fetchContacts = async () => {
@@ -39,6 +41,20 @@ export default function Home() {
     fetchContacts()
   }, [query])
 
+  // Get unique group values for the dropdown
+  const uniqueGroups = Array.from(new Set(contacts.map((c) => c.group))).filter(Boolean)
+
+  // Filter + Sort Contacts
+  const filteredAndSortedContacts = contacts
+    .filter((c) =>
+      !groupFilter || c.group?.toLowerCase() === groupFilter.toLowerCase()
+    )
+    .sort((a, b) =>
+      sortOrder === 'asc'
+        ? a.name.localeCompare(b.name)
+        : b.name.localeCompare(a.name)
+    )
+
   return (
     <main className="max-w-3xl mx-auto p-6">
       <div className="flex items-center justify-between mb-6">
@@ -55,13 +71,37 @@ export default function Home() {
         className="mb-4"
       />
 
+      <div className="flex gap-4 mb-6">
+        <select
+          value={groupFilter}
+          onChange={(e) => setGroupFilter(e.target.value)}
+          className="border rounded px-3 py-1"
+        >
+          <option value="">All Groups</option>
+          {uniqueGroups.map((group) => (
+            <option key={group} value={group}>
+              {group}
+            </option>
+          ))}
+        </select>
+
+        <select
+          value={sortOrder}
+          onChange={(e) => setSortOrder(e.target.value as 'asc' | 'desc')}
+          className="border rounded px-3 py-1"
+        >
+          <option value="asc">Sort A → Z</option>
+          <option value="desc">Sort Z → A</option>
+        </select>
+      </div>
+
       {loading ? (
         <p>Loading...</p>
-      ) : contacts.length === 0 ? (
+      ) : filteredAndSortedContacts.length === 0 ? (
         <p className="text-gray-500 italic">No contacts found.</p>
       ) : (
         <div className="space-y-4">
-          {contacts.map((contact) => (
+          {filteredAndSortedContacts.map((contact) => (
             <Card key={contact.id}>
               <CardContent className="p-4 flex justify-between items-start">
                 <div>
@@ -69,7 +109,9 @@ export default function Home() {
                   <p>{contact.email}</p>
                   {contact.phone && <p>{contact.phone}</p>}
                   {contact.group && (
-                    <p className="text-sm text-muted-foreground">Group: {contact.group}</p>
+                    <p className="text-sm text-muted-foreground">
+                      Group: {contact.group}
+                    </p>
                   )}
                 </div>
 
