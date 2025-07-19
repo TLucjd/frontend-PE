@@ -17,7 +17,7 @@ export default function Home() {
   const fetchContacts = async () => {
     setLoading(true)
     try {
-      const data = await getContacts(query)
+      const data = await getContacts()
       setContacts(data)
     } catch (error) {
       console.error('Failed to fetch contacts:', error)
@@ -39,15 +39,16 @@ export default function Home() {
 
   useEffect(() => {
     fetchContacts()
-  }, [query])
+  }, [])
 
   // Get unique group values for the dropdown
   const uniqueGroups = Array.from(new Set(contacts.map((c) => c.group))).filter(Boolean)
 
-  // Filter + Sort Contacts
+  // Filter + Search + Sort Contacts (client-side)
   const filteredAndSortedContacts = contacts
     .filter((c) =>
-      !groupFilter || c.group?.toLowerCase() === groupFilter.toLowerCase()
+      (!groupFilter || c.group?.toLowerCase() === groupFilter.toLowerCase()) &&
+      c.name.toLowerCase().includes(query.toLowerCase())
     )
     .sort((a, b) =>
       sortOrder === 'asc'
