@@ -15,7 +15,7 @@ export default function Home() {
   const fetchContacts = async () => {
     setLoading(true)
     try {
-      const data = await getContacts({ name: query })
+      const data = await getContacts(query)
       setContacts(data)
     } catch (error) {
       console.error('Failed to fetch contacts:', error)
